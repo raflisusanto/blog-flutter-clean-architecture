@@ -1,15 +1,15 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:practice_app/core/error/exceptions.dart';
 import 'package:practice_app/core/error/failures.dart';
-import 'package:practice_app/features/auth/data/datasources/auth_supabase_source.dart';
-import 'package:practice_app/features/auth/domain/entities/profile.dart';
+import 'package:practice_app/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:practice_app/core/common/entities/profile.dart';
 import 'package:practice_app/features/auth/domain/repository/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthSupabaseSource supabaseDataSource;
+  final AuthRemoteDataSource remoteDataSource;
 
-  const AuthRepositoryImpl(this.supabaseDataSource);
+  const AuthRepositoryImpl(this.remoteDataSource);
 
   @override
   Future<Either<Failure, Profile>> loginWithEmailPassword({
@@ -17,7 +17,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     return _getUser(
-      () async => await supabaseDataSource.loginWithEmailPassword(
+      () async => await remoteDataSource.loginWithEmailPassword(
         email: email,
         password: password,
       ),
@@ -31,7 +31,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     return _getUser(
-      () async => await supabaseDataSource.signUpWithEmailPassword(
+      () async => await remoteDataSource.signUpWithEmailPassword(
         name: name,
         email: email,
         password: password,
@@ -46,6 +46,19 @@ class AuthRepositoryImpl implements AuthRepository {
       return right(user);
     } on AuthException catch (e) {
       return left(Failure(e.message));
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Profile>> currentUser() async {
+    try {
+      final user = await remoteDataSource.getCurrentUserData();
+      if (user == null) {
+        return left(Failure("User not logged in"));
+      }
+      return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }

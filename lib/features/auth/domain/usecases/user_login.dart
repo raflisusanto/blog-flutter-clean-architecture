@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:practice_app/core/error/failures.dart';
 import 'package:practice_app/core/usecase/usecase.dart';
-import 'package:practice_app/features/auth/domain/entities/profile.dart';
+import 'package:practice_app/core/common/entities/profile.dart';
 import 'package:practice_app/features/auth/domain/repository/auth_repository.dart';
 
 class UserLogin implements UseCase<Profile, UserLoginParams> {
